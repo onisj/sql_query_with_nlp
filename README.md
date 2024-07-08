@@ -4,7 +4,7 @@
 
 In today’s data-driven world, professionals across various industries often need to extract insights from large SQL databases. Traditionally, this process involved writing complex SQL queries, performing extensive data manipulation, and creating visual dashboards to interpret results. These tasks can be time-consuming and require a high level of technical expertise.
 
-![bird_image](../images/bird.png)
+![bird_image](./images/bird.png)
 
 
 However, with advancements in natural language processing and AI technologies, querying SQL databases has become much more intuitive and accessible. Imagine being able to ask questions like, “What are the sales trends for the past year?” or “Which products have the highest return rates?” and instantly receive detailed, visualized responses. This guided project guides you through setting up an agent that lets you query a MySQL database using natural language, simplifying the data analysis process.
@@ -21,13 +21,14 @@ In the project, I will:
 
 ## **Set up a virtual environment**
 
-I'll begin by creating a virtual environment. Using a virtual environment help me manage dependencies for different projects separately, avoiding conflicts between package versions. To replicate this project, kindly follow the teps below:
+Begin by creating a virtual environment. Using a virtual environment help me manage dependencies for different projects separately, avoiding conflicts between package versions. To replicate this project, kindly follow the steps below:
 
-1. **Create and activate a vitual environment using `pipenv`:**
+1. **Create and activate a virtual environment using `pipenv`:**
 
 ```sh
-pip install pipenv
-pipenv install --python 3.11
+pip install virtualenv 
+virtualenv sql_lang   # Create a virtual environment named sql_lang
+source sql_lang/bin/activate    # activates sql_lang
 
 ```
 <u>***Note:***</u> You can use any environment manager of you choice to achieve this same result.
