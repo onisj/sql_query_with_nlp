@@ -1,7 +1,22 @@
 # Byte-compiled / optimized / DLL files
+
+# Python
 __pycache__/
 *.py[cod]
-*$py.class
+*.pyc
+*.pyo
+*.pyd
+
+# Jupyter Notebooks
+.ipynb_checkpoints
+
+# Virtual Environment
+sql_lang/
+
+# Docker
+*.log
+*.pid
+*.swp
 
 # C extensions
 *.so
@@ -50,6 +65,9 @@ coverage.xml
 .hypothesis/
 .pytest_cache/
 cover/
+
+# environment
+sql_lang/
 
 # Translations
 *.mo

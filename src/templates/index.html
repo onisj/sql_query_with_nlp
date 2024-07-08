@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SQL Query Translator</title>
+</head>
+<body>
+    <h1>Query SQL Database Using Natural Language</h1>
+    <form method="post">
+        <label for="query">Enter your query:</label>
+        <input type="text" id="query" name="query">
+        <input type="submit" value="Submit">
+    </form>
+    {% if query %}
+    <h2>Natural Language Query:</h2>
+    <p>{{ query }}</p>
+    <h2>Translated SQL Query:</h2>
+    <p>{{ sql_query }}</p>
+    <h2>Results:</h2>
+    <table>
+        {% for row in results %}
+        <tr>
+            {% for col in row %}
+            <td>{{ col }}</td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+</body>
+</html>

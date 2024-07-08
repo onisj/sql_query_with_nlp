@@ -9,10 +9,38 @@ In today’s data-driven world, professionals across various industries often ne
 
 However, with advancements in natural language processing and AI technologies, querying SQL databases has become much more intuitive and accessible. Imagine being able to ask questions like, “What are the sales trends for the past year?” or “Which products have the highest return rates?” and instantly receive detailed, visualized responses. This guided project guides you through setting up an agent that lets you query a MySQL database using natural language, simplifying the data analysis process.
 
+## **Directory Structure**
+
+```bash
+sql_query_with_lang/
+├── sql_lang/                   # Virtual environment directory (not needed in the container)
+│   ├── bin/
+│   ├── lib/
+│   ├── ...
+├── src/                        # Source code directory
+│   ├── sq_agent.py
+│   ├── sql_agent.ipynb
+│   ├── mysql_conn.py
+│   ├── mysql_conn.ipynb
+│   ├── app.py                 # Flask application file
+│   ├── templates/             # Templates directory for Flask
+│   │   └── index.html
+├── images/                     # Directory for images
+│   ├── ...
+├── data/                       # Directory for database initialization scripts
+│   ├── init.sql
+├── .env                        # Environment variables file
+├── .gitignore                  # Git ignore file
+├── Dockerfile                  # Dockerfile for containerizing your project
+├── requirements.txt            # Python dependencies
+├── README.md                   # Project README
+├── docker-compose.yml          # Docker Compose file to manage multiple containers
+
+```
 
 ## **Objective**
 
-In the project, I will:
+In this project, I will:
 
 - **Integrate natural language processing**: I'll use tools like Langchain and large language models (LLM) to interpret natural language queries.
 
@@ -42,60 +70,171 @@ To ensure a seamless execution of the scripts, and considering that certain func
 - *`langchain`, `langchain-ibm`, and `langchain-experimental`**: This library is used for relevant features from Langchain.
 - **`mysql-connector-python`**: This library is used as a MySQL database connector.
 
-Run the following commonds in your terminal (with the `pipenv` prefix) to install the packages.
+Run the following commands in your terminal (with the `sql_lang` prefix) to install the packages.
 
 ```sh
-pipenv install ibm-watsonx-ai==1.0.4 \
-ibm-watson-machine-learning==1.0.357 \
-langchain==0.2.1 \
-langchain-ibm==0.1.7 \
-langchain-experimental==0.0.59 \
-mysql-connector-python==8.4.0
-
+pip install -r requirements.txt
 ```
 
-3. **Activate the `pipenv` shell:
-
-```sh
-pipenv shell
-
-```
 
 
 ## **Instantiate a MySQL database**
 
-Because this project focuses on querying a MySQL database using natural language, you must instantiate a MySQL server, and then create a sample database in the server.
+To replicate the process of instantiating a MySQL database and creating a sample database (Chinook) in a Jupyter Notebook, you can use the following steps. This guide assumes you have the necessary privileges to start a MySQL server and interact with it.
 
-### **Create MySQL server**
+### **Install Required Libraries:**
 
-To create a MySQL server in Cloud IDE, click the following button.
+1. **Start MySQL Server:**
+Typically, starting a MySQL server is done outside Jupyter Notebook. You can start the MySQL server through your Cloud IDE or local environment. However, for automation within a Jupyter Notebook, you can use Docker if installed.
 
- Open and Start MySQL in IDE
+```python
+docker run --name mysql-server -e MYSQL_ROOT_PASSWORD=root -d mysql:latest
+```
 
-After you click the button, you see that there is a MySQL service on the right. Click Start to start the MySQL server.
+<u>**Note:**</u> Replace "root" with your desired password.
 
-indexing
+2. **Connect to MySQL Server:**
+Use the mysql.connector library to connect to your MySQL server.
 
-It might take approximately 10-15 seconds. When it’s showing active, it means that the server is ready to be used. If you see any error messages, please refresh the page and try again.
 
-indexing
+```python
+import mysql.connector
+from mysql.connector import Error
 
-You have created a MySQL server. Let’s test it to see if it can run successfully.
+try:
+    connection = mysql.connector.connect(
+        host='localhost',
+        user='root',
+        password='root'  # Use your MySQL root password
+    )
+    if connection.is_connected():
+        print("Successfully connected to MySQL server")
+        cursor = connection.cursor()
+        cursor.execute("SHOW DATABASES;")
+        databases = cursor.fetchall()
+        print("Databases:", databases)
+except Error as e:
+    print("Error while connecting to MySQL", e)
 
-Click MySQL CLI so that you can interact with the server in the terminal. It opens a new tab in the terminal showing something similar to the following image with the mysql prefix at the front.
+```
 
-indexing
+3. **Download and Execute Chinook Database Creation Script:**
 
-THis means that you have successfully connected with the server. Now, let’s input an SQL query to test it. For example, the following command shows all databases in the server.
+Use Python to download the SQL script and execute it to create the Chinook database.
 
-1
-SHOW DATABASES;
-Copied!
-To run it, press enter/return on your keyboard. If it runs successcully, it returns an output like shown in the following image.
+```python
+import os
 
-indexing
+# Download the SQL file
+sql_url = 'https://cf-courses-data.s3.us.cloud-object-storage.appdomain.cloud/Mauh_UvY4eK2SkcHj_b8Tw/chinook-mysql.sql'
+sql_file = 'chinook-mysql.sql'
+os.system(f"wget {sql_url} -O {sql_file}")
 
-Congratulations, the server is working correctly. Now, let’s create a sample database to use.
+# Execute the SQL file
+try:
+    cursor.execute(f"SOURCE {sql_file}")
+    connection.commit()
+    print("Chinook database created successfully")
+except Error as e:
+    print("Error while executing SQL script", e)
+
+```
+3. **Verify Database Creation:**
+Check if the Chinook database was created successfully.
+
+python
+Copy code
+try:
+    cursor.execute("SHOW DATABASES;")
+    databases = cursor.fetchall()
+    print("Databases:", databases)
+except Error as e:
+    print("Error while fetching databases", e)
+Run Sample Queries:
+Execute sample SQL commands to interact with the Chinook database.
+
+python
+Copy code
+try:
+    cursor.execute("USE Chinook;")
+    cursor.execute("SELECT COUNT(*) FROM Album;")
+    result = cursor.fetchone()
+    print("Number of albums in the Chinook database:", result[0])
+except Error as e:
+    print("Error while running SQL commands", e)
+Full Jupyter Notebook Script
+Here's the full script you can use in a Jupyter Notebook:
+
+python
+Copy code
+# Install mysql-connector-python
+!pip install mysql-connector-python
+
+# Start MySQL server using Docker (optional, for local environments)
+!docker run --name mysql-server -e MYSQL_ROOT_PASSWORD=root -d mysql:latest
+
+import mysql.connector
+from mysql.connector import Error
+import os
+
+# Connect to MySQL server
+try:
+    connection = mysql.connector.connect(
+        host='localhost',
+        user='root',
+        password='root'  # Use your MySQL root password
+    )
+    if connection.is_connected():
+        print("Successfully connected to MySQL server")
+        cursor = connection.cursor()
+        cursor.execute("SHOW DATABASES;")
+        databases = cursor.fetchall()
+        print("Databases:", databases)
+except Error as e:
+    print("Error while connecting to MySQL", e)
+
+# Download the SQL file
+sql_url = 'https://cf-courses-data.s3.us.cloud-object-storage.appdomain.cloud/Mauh_UvY4eK2SkcHj_b8Tw/chinook-mysql.sql'
+sql_file = 'chinook-mysql.sql'
+os.system(f"wget {sql_url} -O {sql_file}")
+
+# Execute the SQL file
+try:
+    with open(sql_file, 'r') as file:
+        sql_script = file.read()
+    for statement in sql_script.split(';'):
+        if statement.strip():
+            cursor.execute(statement)
+    connection.commit()
+    print("Chinook database created successfully")
+except Error as e:
+    print("Error while executing SQL script", e)
+
+# Verify database creation
+try:
+    cursor.execute("SHOW DATABASES;")
+    databases = cursor.fetchall()
+    print("Databases:", databases)
+except Error as e:
+    print("Error while fetching databases", e)
+
+# Run sample queries
+try:
+    cursor.execute("USE Chinook;")
+    cursor.execute("SELECT COUNT(*) FROM Album;")
+    result = cursor.fetchone()
+    print("Number of albums in the Chinook database:", result[0])
+except Error as e:
+    print("Error while running SQL commands", e)
+This script should help you set up and interact with a MySQL database within a Jupyter Notebook environment. Ensure you have the necessary privileges and tools installed to execute these commands.
+
+
+
+
+
+
+
+
 
 ### **Create Chinook database**
 
