@@ -4,22 +4,33 @@ FROM python:3.10
 # Set the working directory in the container
 WORKDIR /app
 
-# Copy the requirements file and install dependencies
-COPY requirements.txt requirements.txt
+# Copy the requirements file and install Python dependencies
+COPY requirements.txt .
 
-# Install the dependencies
+# Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Create the data directory and copy mysql_conn.py
+RUN mkdir -p /app/data
+COPY data/mysql_conn.py /app/data/
+
+# Run mysql_conn.py to download and save init.sql
+RUN python /app/data/mysql_conn.py
+
+# Check if init.sql file exists (for debugging)
+RUN ls -l /app/data/init.sql
+
 # Copy the source code into the container
-COPY src/ ./src/
+COPY src/ /app/src/
 
-COPY src/ /app
+# Copy the data folder for the database initialization script
+COPY data/ /app/data/
 
-# Copy .env file
-COPY .env .env
-
-# Expose the port the app runs on
+# Expose ports for Streamlit and Flask
 EXPOSE 8501 5000
 
-# Command to run the application
-CMD ["streamlit", "run", "src/app.py"]
+# Command to run the Streamlit application
+CMD ["streamlit", "run", "src/app_st.py", "--server.port", "8501"]
+
+# Command to run the Flask application (commented out for now)
+# CMD ["flask", "run", "--host=0.0.0.0", "--port", "5000"]

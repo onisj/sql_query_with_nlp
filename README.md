@@ -13,22 +13,18 @@ However, with advancements in natural language processing and AI technologies, q
 
 ```bash
 sql_query_with_lang/
-├── sql_lang/                   # Virtual environment directory (not needed in the container)
-│   ├── bin/
-│   ├── lib/
-│   ├── ...
 ├── src/                        # Source code directory
+│   ├── app_st.py               # Streamlit application file
+│   ├── app_fk.py               # Flask application file
 │   ├── sq_agent.py
-│   ├── sql_agent.ipynb
-│   ├── mysql_conn.py
-│   ├── mysql_conn.ipynb
-│   ├── app.py                 # Flask application file
-│   ├── templates/             # Templates directory for Flask
+│   ├── sql_agent.ipynb         # jupyter notebook for research
+│   ├── templates/              # Templates directory for Flask
 │   │   └── index.html
 ├── images/                     # Directory for images
 │   ├── ...
 ├── data/                       # Directory for database initialization scripts
-│   ├── init.sql
+│   ├── init.sql                # file containing the database creation script
+│   ├── mysql_conn.py           # Downloads the init.sql file  
 ├── .env                        # Environment variables file
 ├── .gitignore                  # Git ignore file
 ├── Dockerfile                  # Dockerfile for containerizing your project
@@ -48,199 +44,37 @@ In this project, I will:
 
 
 ## **Set up a virtual environment**
-
-Begin by creating a virtual environment. Using a virtual environment help me manage dependencies for different projects separately, avoiding conflicts between package versions. To replicate this project, kindly follow the steps below:
+I began by creating a virtual environment to run my code locally before containerizing it. Using a virtual environment lets you manage dependencies for different projects separately, avoiding conflicts between package versions. The virtualenv (sql_lang) willnot be pushed to production
 
 1. **Create and activate a virtual environment using `pipenv`:**
 
-```sh
+```python
 pip install virtualenv 
-virtualenv sql_lang   # Create a virtual environment named sql_lang
+virtualenv sql_lang             # Create a virtual environment named sql_lang
 source sql_lang/bin/activate    # activates sql_lang
-
 ```
-<u>***Note:***</u> You can use any environment manager of you choice to achieve this same result.
 
+***Note:*** You can use any environment manager of you choice to achieve this same result.
 
 2. **Install the necessary libraries within the `pipenv` environment:**
-
 To ensure a seamless execution of the scripts, and considering that certain functions within these scripts rely on external libraries, it’s essential to install some prerequisite libraries before you begin.
 
-- **`ibm-watsonx-ai` and `ibm-watson-machine-learning`**: The IBM Watson Machine Learning package integrates powerful IBM LLM models into the project.
-- *`langchain`, `langchain-ibm`, and `langchain-experimental`**: This library is used for relevant features from Langchain.
-- **`mysql-connector-python`**: This library is used as a MySQL database connector.
+- **`ibm-watsonx-ai` and `ibm-watson-machine-learning`:** The IBM Watson Machine Learning package integrates powerful IBM LLM models into the project.
+- **`langchain, langchain-ibm,` and `langchain-experimental`:** This library is used for relevant features from Langchain.
+- **`mysql-connector-python`:** This library is used as a MySQL database connector.
 
-Run the following commands in your terminal (with the `sql_lang` prefix) to install the packages.
+Run the following commands in your terminal (with the sql_lang prefix) to install the packages.
 
-```sh
+```python
 pip install -r requirements.txt
-```
-
-
-
-## **Instantiate a MySQL database**
-
-To replicate the process of instantiating a MySQL database and creating a sample database (Chinook) in a Jupyter Notebook, you can use the following steps. This guide assumes you have the necessary privileges to start a MySQL server and interact with it.
-
-### **Install Required Libraries:**
-
-1. **Start MySQL Server:**
-Typically, starting a MySQL server is done outside Jupyter Notebook. You can start the MySQL server through your Cloud IDE or local environment. However, for automation within a Jupyter Notebook, you can use Docker if installed.
-
-```python
-docker run --name mysql-server -e MYSQL_ROOT_PASSWORD=root -d mysql:latest
-```
-
-<u>**Note:**</u> Replace "root" with your desired password.
-
-2. **Connect to MySQL Server:**
-Use the mysql.connector library to connect to your MySQL server.
-
-
-```python
-import mysql.connector
-from mysql.connector import Error
-
-try:
-    connection = mysql.connector.connect(
-        host='localhost',
-        user='root',
-        password='root'  # Use your MySQL root password
-    )
-    if connection.is_connected():
-        print("Successfully connected to MySQL server")
-        cursor = connection.cursor()
-        cursor.execute("SHOW DATABASES;")
-        databases = cursor.fetchall()
-        print("Databases:", databases)
-except Error as e:
-    print("Error while connecting to MySQL", e)
 
 ```
 
-3. **Download and Execute Chinook Database Creation Script:**
-
-Use Python to download the SQL script and execute it to create the Chinook database.
-
-```python
-import os
-
-# Download the SQL file
-sql_url = 'https://cf-courses-data.s3.us.cloud-object-storage.appdomain.cloud/Mauh_UvY4eK2SkcHj_b8Tw/chinook-mysql.sql'
-sql_file = 'chinook-mysql.sql'
-os.system(f"wget {sql_url} -O {sql_file}")
-
-# Execute the SQL file
-try:
-    cursor.execute(f"SOURCE {sql_file}")
-    connection.commit()
-    print("Chinook database created successfully")
-except Error as e:
-    print("Error while executing SQL script", e)
-
-```
-3. **Verify Database Creation:**
-Check if the Chinook database was created successfully.
-
-python
-Copy code
-try:
-    cursor.execute("SHOW DATABASES;")
-    databases = cursor.fetchall()
-    print("Databases:", databases)
-except Error as e:
-    print("Error while fetching databases", e)
-Run Sample Queries:
-Execute sample SQL commands to interact with the Chinook database.
-
-python
-Copy code
-try:
-    cursor.execute("USE Chinook;")
-    cursor.execute("SELECT COUNT(*) FROM Album;")
-    result = cursor.fetchone()
-    print("Number of albums in the Chinook database:", result[0])
-except Error as e:
-    print("Error while running SQL commands", e)
-Full Jupyter Notebook Script
-Here's the full script you can use in a Jupyter Notebook:
-
-python
-Copy code
-# Install mysql-connector-python
-!pip install mysql-connector-python
-
-# Start MySQL server using Docker (optional, for local environments)
-!docker run --name mysql-server -e MYSQL_ROOT_PASSWORD=root -d mysql:latest
-
-import mysql.connector
-from mysql.connector import Error
-import os
-
-# Connect to MySQL server
-try:
-    connection = mysql.connector.connect(
-        host='localhost',
-        user='root',
-        password='root'  # Use your MySQL root password
-    )
-    if connection.is_connected():
-        print("Successfully connected to MySQL server")
-        cursor = connection.cursor()
-        cursor.execute("SHOW DATABASES;")
-        databases = cursor.fetchall()
-        print("Databases:", databases)
-except Error as e:
-    print("Error while connecting to MySQL", e)
-
-# Download the SQL file
-sql_url = 'https://cf-courses-data.s3.us.cloud-object-storage.appdomain.cloud/Mauh_UvY4eK2SkcHj_b8Tw/chinook-mysql.sql'
-sql_file = 'chinook-mysql.sql'
-os.system(f"wget {sql_url} -O {sql_file}")
-
-# Execute the SQL file
-try:
-    with open(sql_file, 'r') as file:
-        sql_script = file.read()
-    for statement in sql_script.split(';'):
-        if statement.strip():
-            cursor.execute(statement)
-    connection.commit()
-    print("Chinook database created successfully")
-except Error as e:
-    print("Error while executing SQL script", e)
-
-# Verify database creation
-try:
-    cursor.execute("SHOW DATABASES;")
-    databases = cursor.fetchall()
-    print("Databases:", databases)
-except Error as e:
-    print("Error while fetching databases", e)
-
-# Run sample queries
-try:
-    cursor.execute("USE Chinook;")
-    cursor.execute("SELECT COUNT(*) FROM Album;")
-    result = cursor.fetchone()
-    print("Number of albums in the Chinook database:", result[0])
-except Error as e:
-    print("Error while running SQL commands", e)
-This script should help you set up and interact with a MySQL database within a Jupyter Notebook environment. Ensure you have the necessary privileges and tools installed to execute these commands.
-
-
-
-
-
-
-
-
-
-### **Create Chinook database**
+## **Meet the Chinook database**
 
 In this project, I'll use the ![Chinook](https://docs.yugabyte.com/preview/sample-data/chinook/) database as an example. The database can be forund on this ![repo](https://github.com/yugabyte/yugabyte-db/tree/master/sample).
 
-#### **Introduction to the Chinook database**
+### **Introduction to the Chinook database**
 
 The Chinook data model represents a digital media store, including tables for artists, albums, media tracks, invoices, and customers.
 
@@ -256,7 +90,7 @@ The Chinook data model represents a digital media store, including tables for ar
 
 For details, the following image shows the entity relationship diagram of the Chinook data model.
 
-#### **Install the Chinook sample database**
+### **Install the Chinook sample database**
 
 The Chinook SQL scripts can be found in the sample directory of the YugabyteDB [GitHub](https://github.com/yugabyte/yugabyte-db) repository. The following files will be used for this exercise:
 
@@ -267,45 +101,106 @@ The Chinook SQL scripts can be found in the sample directory of the YugabyteDB [
 
 Follow the steps here to install the Chinook sample database.
 
+The database creation code has been prepared for you. The following code retrieves the SQL file from the remote repository.
 
-Retrieve the database creation code
-The database creation code has been prepared for you. Run the following code in the terminal to retrieve the SQL file from the remote.
-Note: Run the code in the terminal with the (my_env) prefix instead of the mysql prefix.
+```python
+import os
+import shutil
 
-1
-wget https://cf-courses-data.s3.us.cloud-object-storage.appdomain.cloud/Mauh_UvY4eK2SkcHj_b8Tw/chinook-mysql.sql
-Copied!Executed!
-After it runs successfully, you see an SQL file called PROJECT.
+# Download Database (Chinook MySQL)
+sql_url = 'https://cf-courses-data.s3.us.cloud-object-storage.appdomain.cloud/Mauh_UvY4eK2SkcHj_b8Tw/chinook-mysql.sql'
+sql_file = 'data/init.sql'
 
-indexing
+# Use os.system to download the SQL file
+os.system(f"wget {sql_url} -O {sql_file}")
 
-Run the sql file
-Now, you must excute the SQL file to create the database.
+```
+<u>***Note:***</u> The above code can by executed by running the following code, which donloads the dat into data/.
 
-At the terminal with the mysql prefix, enter the following command.
+```python
+python data/mysql_conn.py
 
-1
-SOURCE chinook-mysql.sql;
-Copied!
-After it’s finished, test to see if the database was created successfully by entering the following command.
+```
 
-1
+
+## **Set up a Container**
+
+To replicate this project, kindly follow the steps below:
+
+1. **Create a Docker File:**
+
+Kindly run the following code in your terminal
+
+```bash
+docker-compose up --build
+
+```
+
+## **Instantiate a MySQL database**
+
+Also note that MySQL has been instantiated in the docker container. You can confirm the accurateness of this running some of the codes below:
+
+1. **Run a command in the interactive terminal:**
+Kind run the following command in a separate terminal to interact with the instantiated MySQL-Server in docker.
+```bash
+docker exec -it mysql mysql -u root -p
+
+```
+The above code will then prompt you to input the password you kept in the **`.env`** file (**`root`**; in this case.)
+
+![step1](./images/mysql_1.JPG)
+
+2. **Confirm the Database has been created:**
+To confirm the database has been created, run the following code:
+
+```bash
 SHOW DATABASES;
-Copied!
-If the database was successfully created, you see the Chinook database in your list of databases.
 
-indexing
+```
+If the database was successfully created, you see the Chinook database in your list of databases. You should get something similar to this:
+
+```sql
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| Chinook            |
+| mysql              |
+| performance_schema |
+| sys                |
++--------------------+
+5 rows in set (0.00 sec)
+
+```
+
+3. **Run some query:**
 
 Let’s run some sample SQL commands to interact with the Chinook database. For example, suppose that you want to know how many albums the Chinook database contains. To find this information, you could run the following SQL command.
 
-1
-2
+```sql
 USE Chinook;
 SELECT COUNT(*) FROM Album;
-Copied!
-The previous command, when copied and pasted into the terminal with the mysql prefix should give you an answer of 347.
+```
+The above command, when copied and pasted into the terminal with the mysql prefix should give you an answer of 347. You should see something close to:
 
-indexing
+```sql
+mysql> SELECT COUNT(*) FROM Album;
++----------+
+| COUNT(*) |
++----------+
+|      347 |
++----------+
+1 row in set (0.01 sec)
+
+```
+
+
+
+
+
+
+
+
 
 
 
